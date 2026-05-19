@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GST Impact Analysis — India 2017–2023</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #060810;
+    --surface: #0d1117;
+    --surface2: #131b27;
+    --border: #1e2d42;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2eaf5;
+    --muted: #5a7a99;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID NOISE BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6,8,16,.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    font-family: var(--sans);
+    font-weight: 800; font-size: 1rem;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); }
+  .header-meta {
+    display: flex; gap: 2rem; align-items: center;
+  }
+  .pill {
+    font-size: .65rem; font-weight: 600; letter-spacing: .1em;
+    padding: 4px 10px; border-radius: 20px;
+    text-transform: uppercase;
+  }
+  .pill-green { background: rgba(16,185,129,.15); color: var(--accent3); border: 1px solid rgba(16,185,129,.3); }
+  .pill-blue { background: rgba(0,212,255,.1); color: var(--accent); border: 1px solid rgba(0,212,255,.2); }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
+
+  /* ── HERO BAND ── */
+  .hero {
+    padding: 3rem 2rem 2rem;
+    position: relative; z-index: 1;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+  .hero-tag {
+    font-size: .65rem; font-weight: 600; letter-spacing: .2em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800; line-height: 1.1;
+    letter-spacing: -.03em;
+    margin-bottom: .75rem;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero p {
+    color: var(--muted); font-size: .8rem; line-height: 1.7;
+    max-width: 620px;
+  }
+  .hero-stats {
+    display: flex; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap;
+  }
+  .hstat { border-left: 2px solid var(--border); padding-left: 1rem; }
+  .hstat-val {
+    font-family: var(--sans); font-size: 1.6rem; font-weight: 800;
+    color: var(--accent); line-height: 1;
+  }
+  .hstat-label { font-size: .65rem; color: var(--muted); margin-top: 4px; letter-spacing: .05em; }
+
+  /* ── KPI GRID ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .kpi {
+    background: var(--surface);
+    padding: 1.25rem 1.5rem;
+    transition: background .2s;
+  }
+  .kpi:hover { background: var(--surface2); }
+  .kpi-label { font-size: .6rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .5rem; }
+  .kpi-val { font-family: var(--sans); font-size: 1.8rem; font-weight: 800; line-height: 1; }
+  .kpi-sub { font-size: .65rem; color: var(--muted); margin-top: .25rem; }
+  .kpi-delta { font-size: .7rem; font-weight: 600; margin-top: .5rem; }
+  .up { color: var(--accent3); } .down { color: var(--danger); } .neutral { color: var(--warn); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: 1.25rem;
+  }
+  .section-title h2 {
+    font-family: var(--sans); font-size: 1rem; font-weight: 700; letter-spacing: -.02em;
+  }
+  .section-title .line {
+    flex: 1; height: 1px; background: var(--border);
+  }
+  .section-title .tag {
+    font-size: .6rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+  }
+
+  /* ── CHARTS AREA ── */
+  .chart-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;
+  }
+  @media(max-width:900px){ .chart-row { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-title {
+    font-size: .7rem; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-title span { color: var(--accent); font-size: .65rem; }
+
+  /* ── BAR CHART ── */
+  .bar-chart { display: flex; flex-direction: column; gap: .75rem; }
+  .bar-row { display: flex; align-items: center; gap: .75rem; }
+  .bar-label { font-size: .65rem; color: var(--muted); width: 90px; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 28px; background: rgba(255,255,255,.04); border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    display: flex; align-items: center; padding-left: .5rem;
+    font-size: .6rem; font-weight: 700; color: var(--bg);
+    position: relative;
+    transition: width 1.2s cubic-bezier(.22,1,.36,1);
+  }
+  .bar-val { font-size: .65rem; color: var(--muted); width: 55px; flex-shrink: 0; }
+
+  /* ── LINE CHART (SVG) ── */
+  .chart-svg { width: 100%; overflow: visible; }
+
+  /* ── SECTOR TABLE ── */
+  .sector-table { width: 100%; border-collapse: collapse; font-size: .7rem; }
+  .sector-table th {
+    font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); padding: .6rem .75rem; border-bottom: 1px solid var(--border);
+    text-align: left; font-weight: 600;
+  }
+  .sector-table td { padding: .75rem .75rem; border-bottom: 1px solid rgba(30,45,66,.5); }
+  .sector-table tr:hover td { background: rgba(0,212,255,.03); }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: .6rem; font-weight: 600; letter-spacing: .05em;
+  }
+  .badge-g { background: rgba(16,185,129,.15); color: var(--accent3); }
+  .badge-y { background: rgba(245,158,11,.15); color: var(--warn); }
+  .badge-r { background: rgba(239,68,68,.15); color: var(--danger); }
+  .cagr-bar { display: flex; align-items: center; gap: .5rem; }
+  .cagr-mini { height: 6px; border-radius: 3px; background: var(--accent); }
+
+  /* ── REVENUE CHART ── */
+  .rev-chart { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: .5rem; }
+  .rev-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .rev-bar {
+    width: 100%; border-radius: 4px 4px 0 0;
+    transition: height 1s cubic-bezier(.22,1,.36,1);
+    position: relative;
+    cursor: pointer;
+  }
+  .rev-bar:hover { filter: brightness(1.3); }
+  .rev-bar::after {
+    content: attr(data-val);
+    position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+    font-size: .55rem; color: var(--accent); white-space: nowrap; opacity: 0;
+    transition: opacity .2s;
+  }
+  .rev-bar:hover::after { opacity: 1; }
+  .rev-year { font-size: .55rem; color: var(--muted); text-align: center; }
+  .rev-growth { font-size: .5rem; text-align: center; }
+
+  /* ── DONUT ── */
+  .donut-wrap { display: flex; align-items: center; gap: 1.5rem; }
+  .donut-legend { display: flex; flex-direction: column; gap: .6rem; }
+  .leg-item { display: flex; align-items: center; gap: .5rem; font-size: .65rem; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── IMPACT FLOW ── */
+  .flow { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .flow-node {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: .75rem 1rem;
+    font-size: .65rem; text-align: center; flex: 1; min-width: 110px;
+  }
+  .flow-node .fn-title { font-weight: 700; color: var(--accent); font-size: .7rem; margin-bottom: .25rem; }
+  .flow-arrow { color: var(--muted); font-size: 1.2rem; flex-shrink: 0; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .tab {
+    font-family: var(--mono); font-size: .65rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); cursor: pointer;
+    transition: all .2s; letter-spacing: .05em; text-transform: uppercase;
+  }
+  .tab.active, .tab:hover {
+    background: rgba(0,212,255,.1); color: var(--accent); border-color: rgba(0,212,255,.3);
+  }
+
+  /* ── SECTOR CARDS ── */
+  .sector-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .s-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem;
+    transition: border-color .2s, transform .2s;
+    cursor: pointer;
+  }
+  .s-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .s-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .75rem; }
+  .s-card-title { font-family: var(--sans); font-weight: 700; font-size: .9rem; }
+  .s-card-sub { font-size: .6rem; color: var(--muted); margin-top: 2px; }
+  .s-card-body { font-size: .65rem; color: var(--muted); line-height: 1.7; }
+  .s-card-metrics { display: flex; gap: 1rem; margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); }
+  .s-metric .val { font-weight: 700; font-size: .8rem; }
+  .s-metric .lbl { font-size: .55rem; color: var(--muted); margin-top: 1px; }
+
+  /* ── RECOMMENDATION CARDS ── */
+  .rec-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+    gap: 1rem;
+  }
+  .rec-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem;
+  }
+  .rec-card-header {
+    font-size: .6rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: .75rem; font-weight: 600;
+  }
+  .rec-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .rec-list li {
+    font-size: .7rem; color: var(--text); padding-left: 1rem; position: relative; line-height: 1.5;
+  }
+  .rec-list li::before {
+    content: '→'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border); margin-top: 3rem;
+    padding: 1.5rem 2rem; display: flex; justify-content: space-between;
+    align-items: center; font-size: .6rem; color: var(--muted);
+    position: relative; z-index: 1;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  footer .src { display: flex; gap: 1rem; }
+  .src-tag {
+    padding: 3px 8px; border-radius: 4px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: .58rem; color: var(--muted);
+  }
+
+  /* ── FADE IN ── */
+  .fade-in {
+    opacity: 0; transform: translateY(16px);
+    animation: fadeUp .6s ease forwards;
+  }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s}
+  .d4{animation-delay:.4s} .d5{animation-delay:.5s}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">GST<span>Analytics</span></div>
+  <div class="header-meta">
+    <div class="live-dot"></div>
+    <span class="pill pill-green">Live Dashboard</span>
+    <span class="pill pill-blue">India · 2017–2023</span>
+    <span style="font-size:.65rem;color:var(--muted)">Research Project</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero container fade-in">
+  <div class="hero-tag">// Project — Economic Policy Analysis</div>
+  <h1>Impact of <em>GST</em> on<br/>Different Sectors in India</h1>
+  <p>A comprehensive data-driven analysis of India's Goods &amp; Services Tax implementation across 8 key economic sectors since its introduction in July 2017. Examining pre/post-GST compliance burden, sector-specific adaptations, and long-term economic implications.</p>
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-val">8</div>
+      <div class="hstat-label">Sectors Analyzed</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">2015–23</div>
+      <div class="hstat-label">Timeframe</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">₹1.24L Cr</div>
+      <div class="hstat-label">Peak Monthly Collection</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">+38.6%</div>
+      <div class="hstat-label">Revenue Growth 5yr</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTAINER -->
+<div class="container">
+
+  <!-- KPI ROW -->
+  <div class="kpi-grid fade-in d1">
+    <div class="kpi">
+      <div class="kpi-label">GST Revenue FY21-22</div>
+      <div class="kpi-val" style="color:var(--accent)">₹1.24L Cr</div>
+      <div class="kpi-sub">Avg. Monthly Collection</div>
+      <div class="kpi-delta up">▲ 21.3% YoY — Economic Rebound</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tax Rate Reduction</div>
+      <div class="kpi-val" style="color:var(--accent3)">-8.5pp</div>
+      <div class="kpi-sub">26.5% → 18% for Mfg Goods</div>
+      <div class="kpi-delta up">▲ Positive for consumers</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Logistics Cost Savings</div>
+      <div class="kpi-val" style="color:var(--warn)">10–15%</div>
+      <div class="kpi-sub">For organized sector players</div>
+      <div class="kpi-delta up">▲ +8.2% CAGR sector growth</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">ITC Cascading Reduction</div>
+      <div class="kpi-val" style="color:var(--accent2)">~13%</div>
+      <div class="kpi-sub">12–15% via Input Tax Credit</div>
+      <div class="kpi-delta neutral">◆ Manufacturing sector</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Top CAGR — E-commerce</div>
+      <div class="kpi-val" style="color:var(--accent3)">+22.4%</div>
+      <div class="kpi-sub">Highest sectoral growth rate</div>
+      <div class="kpi-delta up">▲ TCS framework enabled</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Warehouse Consolidation</div>
+      <div class="kpi-val" style="color:var(--danger)">-25%</div>
+      <div class="kpi-sub">35 → ~26 per pan-India co.</div>
+      <div class="kpi-delta up">▲ Efficiency improved</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Revenue Chart + Sector CAGR -->
+  <div class="section-title fade-in d2">
+    <h2>Revenue & Growth Analysis</h2>
+    <div class="line"></div>
+    <div class="tag">Section 01</div>
+  </div>
+
+  <div class="chart-row fade-in d2">
+    <!-- Revenue Bar Chart -->
+    <div class="card">
+      <div class="card-title">
+        GST Monthly Revenue Collections (₹ Crore)
+        <span>2017 → 2022</span>
+      </div>
+      <div class="rev-chart" id="revChart"></div>
+      <div style="font-size:.58rem;color:var(--muted);margin-top:.75rem;">
+        Source: CBIC · Ministry of Finance | Avg. monthly figures
+      </div>
+    </div>
+
+    <!-- Sector CAGR Bar Chart -->
+    <div class="card">
+      <div class="card-title">
+        Sectoral Growth Rate (CAGR %)
+        <span>Post-GST Period</span>
+      </div>
+      <div class="bar-chart" id="cagrChart"></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Sector Deep-Dive -->
+  <div class="section-title fade-in d3">
+    <h2>Sector Deep-Dive</h2>
+    <div class="line"></div>
+    <div class="tag">Section 02</div>
+  </div>
+
+  <div class="tabs fade-in d3" id="sectorTabs">
+    <button class="tab active" onclick="filterSectors('all')">All Sectors</button>
+    <button class="tab" onclick="filterSectors('positive')">Top Gainers</button>
+    <button class="tab" onclick="filterSectors('mixed')">Mixed Impact</button>
+    <button class="tab" onclick="filterSectors('challenged')">Challenged</button>
+  </div>
+
+  <div class="sector-grid fade-in d3" id="sectorGrid"></div>
+
+  <!-- ROW 3: Analytics Table -->
+  <div class="section-title fade-in d3">
+    <h2>Comparative Analytics</h2>
+    <div class="line"></div>
+    <div class="tag">Section 03</div>
+  </div>
+
+  <div class="card fade-in d4" style="margin-bottom:1.5rem;overflow-x:auto;">
+    <div class="card-title">Sector Impact Summary Table <span>Pre vs Post GST</span></div>
+    <table class="sector-table">
+      <thead>
+        <tr>
+          <th>Sector</th>
+          <th>Sub-Sectors</th>
+          <th>Key Metric</th>
+          <th>CAGR</th>
+          <th>Impact</th>
+          <th>Primary Benefit</th>
+          <th>Key Challenge</th>
+        </tr>
+      </thead>
+      <tbody id="sectorTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ROW 4: Methodology Flow -->
+  <div class="section-title fade-in d4">
+    <h2>Analytical Framework</h2>
+    <div class="line"></div>
+    <div class="tag">Section 04</div>
+  </div>
+
+  <div class="card fade-in d4" style="margin-bottom:1.5rem;">
+    <div class="card-title">Research Methodology Pipeline</div>
+    <div class="flow">
+      <div class="flow-node">
+        <div class="fn-title">📥 Data Collection</div>
+        CBIC · MoF · GSTN · FICCI · CII Reports
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-title">🗂 Sector Classification</div>
+        8 Sectors · 15+ Sub-sectors · 2015–2023
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-title">📊 Impact Assessment</div>
+        Pre/Post Comparison · ITC · Rate Analysis
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-title">📈 Visualization</div>
+        Python · Tableau · Power BI · Matplotlib
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="fn-title">💡 Recommendations</div>
+        Policy · Business · Future Research
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 5: Donut + Mini Stats -->
+  <div class="chart-row fade-in d4">
+    <div class="card">
+      <div class="card-title">Sector Classification by Impact <span>Distribution</span></div>
+      <div class="donut-wrap">
+        <svg viewBox="0 0 120 120" width="140" height="140">
+          <!-- Top gainers 37.5% -->
+          <circle cx="60" cy="60" r="45" fill="none" stroke="var(--accent3)" stroke-width="18"
+            stroke-dasharray="105.96 176.71" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+          <!-- Mixed 37.5% -->
+          <circle cx="60" cy="60" r="45" fill="none" stroke="var(--warn)" stroke-width="18"
+            stroke-dasharray="70.69 176.71" stroke-dashoffset="-105.96" transform="rotate(-90 60 60)"/>
+          <!-- Challenged 25% -->
+          <circle cx="60" cy="60" r="45" fill="none" stroke="var(--danger)" stroke-width="18"
+            stroke-dasharray="47.12 176.71" stroke-dashoffset="-176.65" transform="rotate(-90 60 60)"/>
+          <text x="60" y="57" text-anchor="middle" fill="var(--text)" font-size="10" font-family="Syne" font-weight="800">8</text>
+          <text x="60" y="68" text-anchor="middle" fill="var(--muted)" font-size="6" font-family="JetBrains Mono">Sectors</text>
+        </svg>
+        <div class="donut-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--accent3)"></div>Top Gainers (3) — Logistics, E-commerce, Pharma</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--warn)"></div>Mixed Impact (3) — Manufacturing, Real Estate, Services</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--danger)"></div>Challenged (2) — Textiles, MSMEs</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Key Impact Numbers <span>At a Glance</span></div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Delivery Time ↓</div>
+          <div class="bar-track"><div class="bar-fill" style="width:75%;background:var(--accent3);">-20–30%</div></div>
+          <div class="bar-val" style="color:var(--accent3)">-25% avg</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">ITC Savings</div>
+          <div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--accent);">~13%</div></div>
+          <div class="bar-val" style="color:var(--accent)">12–15%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Tax Rate Cut</div>
+          <div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--accent2);">-8.5pp</div></div>
+          <div class="bar-val" style="color:var(--accent2)">26.5→18%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Logistics Cost</div>
+          <div class="bar-track"><div class="bar-fill" style="width:45%;background:var(--warn);">-12%</div></div>
+          <div class="bar-val" style="color:var(--warn)">10–15%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Warehouses ↓</div>
+          <div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--danger);">-25%</div></div>
+          <div class="bar-val" style="color:var(--danger)">35→26</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="section-title fade-in d5">
+    <h2>Insights & Recommendations</h2>
+    <div class="line"></div>
+    <div class="tag">Section 05</div>
+  </div>
+
+  <div class="rec-grid fade-in d5">
+    <div class="rec-card">
+      <div class="rec-card-header" style="color:var(--accent)">🏛 For Policymakers</div>
+      <ul class="rec-list">
+        <li>Simplify compliance further for MSMEs through automated return filing systems</li>
+        <li>Rationalize rate structure to reduce classification disputes across sectors</li>
+        <li>Enhance dispute resolution mechanism for faster adjudication timelines</li>
+      </ul>
+    </div>
+    <div class="rec-card">
+      <div class="rec-card-header" style="color:var(--accent3)">🏢 For Businesses</div>
+      <ul class="rec-list">
+        <li>Leverage technology platforms for GST compliance and input credit optimization</li>
+        <li>Restructure supply chains to fully maximize post-GST efficiency benefits</li>
+        <li>Invest in tax planning strategies to optimize working capital flows</li>
+      </ul>
+    </div>
+    <div class="rec-card">
+      <div class="rec-card-header" style="color:var(--warn)">🔬 Future Research</div>
+      <ul class="rec-list">
+        <li>Longitudinal study on informal sector formalization under GST regime</li>
+        <li>Cross-country comparison with other federal GST systems (Australia, Canada)</li>
+        <li>Environmental impact assessment of logistics optimization post-GST</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <div>
+    Project: Impact of GST on Different Sectors in India · Timeframe 2015–2023 · Academic Research
+  </div>
+  <div class="src">
+    <span class="src-tag">CBIC</span>
+    <span class="src-tag">Ministry of Finance</span>
+    <span class="src-tag">FICCI · CII · ASSOCHAM</span>
+    <span class="src-tag">GSTN Portal</span>
+  </div>
+</footer>
+
+<script>
+// ── DATA ──
+const revenueData = [
+  { year: '2017-18', val: 89885, growth: null },
+  { year: '2018-19', val: 97100, growth: 8.0 },
+  { year: '2019-20', val: 100846, growth: 3.9 },
+  { year: '2020-21', val: 102709, growth: 1.8 },
+  { year: '2021-22', val: 124588, growth: 21.3 },
+];
+
+const cagrData = [
+  { sector: 'E-commerce', cagr: 22.4, color: '#00d4ff' },
+  { sector: 'Pharmaceuticals', cagr: 11.3, color: '#10b981' },
+  { sector: 'Logistics', cagr: 8.2, color: '#10b981' },
+  { sector: 'Manufacturing', cagr: 5.8, color: '#f59e0b' },
+  { sector: 'Real Estate', cagr: 3.2, color: '#f59e0b' },
+  { sector: 'Textiles', cagr: 2.1, color: '#ef4444' },
+];
+
+const sectors = [
+  {
+    id: 'logistics',
+    name: 'Logistics & Supply Chain',
+    sub: 'Warehousing · Transportation',
+    tag: 'positive',
+    badge: 'badge-g', badgeText: 'Top Gainer',
+    cagr: '+8.2%',
+    impact: 'Positive',
+    benefit: 'Input Tax Credit · Transit time reduction',
+    challenge: 'Compliance for small operators',
+    desc: 'Revolutionary changes with 20–30% decrease in average delivery time. Warehousing consolidation from 35 to ~26 locations per pan-India company. Logistics costs reduced 10–15% for organized players.',
+    metrics: [{val:'20–30%',lbl:'Delivery ↓'},{val:'-25%',lbl:'Warehouses'},{val:'10–15%',lbl:'Cost Save'}]
+  },
+  {
+    id: 'ecommerce',
+    name: 'E-commerce',
+    sub: 'Marketplace · Logistics',
+    tag: 'positive',
+    badge: 'badge-g', badgeText: 'Top Gainer',
+    cagr: '+22.4%',
+    impact: 'Positive',
+    benefit: 'TCS framework clarity · National market access',
+    challenge: 'Complex TCS provisions · State compliance',
+    desc: 'Highest growth sector post-GST. TCS provisions created structured compliance, enabling trust in marketplace models. Uniform tax enabled true pan-India expansion.',
+    metrics: [{val:'22.4%',lbl:'CAGR'},{val:'Unified',lbl:'Tax Base'},{val:'TCS',lbl:'Framework'}]
+  },
+  {
+    id: 'pharma',
+    name: 'Pharmaceuticals',
+    sub: 'Generic · Specialty Drugs',
+    tag: 'positive',
+    badge: 'badge-g', badgeText: 'Top Gainer',
+    cagr: '+11.3%',
+    impact: 'Positive',
+    benefit: 'ITC on inputs · Export zero-rating',
+    challenge: 'Classification disputes on drug categories',
+    desc: 'Strong growth driven by export zero-rating and improved ITC availability on manufacturing inputs. Supply chain simplification reduced costs significantly.',
+    metrics: [{val:'11.3%',lbl:'CAGR'},{val:'Zero',lbl:'Export Tax'},{val:'ITC ✓',lbl:'Input Credit'}]
+  },
+  {
+    id: 'manufacturing',
+    name: 'Manufacturing',
+    sub: 'Automobiles · FMCG · Pharma',
+    tag: 'mixed',
+    badge: 'badge-y', badgeText: 'Mixed Impact',
+    cagr: '+5.8%',
+    impact: 'Mixed',
+    benefit: 'ITC reduced cascading effect 12–15%',
+    challenge: 'Initial complexity for multi-state ops · Refund delays',
+    desc: 'Average tax rate reduced from 26.5% to 18%. ITC availability reduced cascading effect by ~12–15%. Challenges in working capital due to delayed refunds (improved post-2019).',
+    metrics: [{val:'18%',lbl:'Tax Rate'},{val:'~13%',lbl:'ITC Benefit'},{val:'+5.8%',lbl:'CAGR'}]
+  },
+  {
+    id: 'services',
+    name: 'Services Sector',
+    sub: 'IT · Banking · Hospitality',
+    tag: 'mixed',
+    badge: 'badge-y', badgeText: 'Mixed Impact',
+    cagr: 'Variable',
+    impact: 'Mixed',
+    benefit: 'IT/ITeS — export zero-rating & competitiveness',
+    challenge: 'Banking faced higher rates 18% vs 15% service tax',
+    desc: 'Consolidated multiple taxes into single GST. IT/ITeS benefited from zero-rating. Banking/Insurance faced higher rates but gained input credit. Hospitality saw classification challenges.',
+    metrics: [{val:'18%',lbl:'GST Rate'},{val:'0%',lbl:'IT Exports'},{val:'3 Sub',lbl:'Sectors'}]
+  },
+  {
+    id: 'realestate',
+    name: 'Real Estate',
+    sub: 'Residential · Commercial',
+    tag: 'mixed',
+    badge: 'badge-y', badgeText: 'Mixed Impact',
+    cagr: '+3.2%',
+    impact: 'Mixed',
+    benefit: 'ITC on construction inputs · Market transparency',
+    challenge: 'Increased costs for affordable housing',
+    desc: 'Mixed outcome: positive input tax credits and greater transparency, but increased costs for affordable housing. Long-term market formalization expected to improve conditions.',
+    metrics: [{val:'+3.2%',lbl:'CAGR'},{val:'ITC ✓',lbl:'On Inputs'},{val:'Formal',lbl:'Market'}]
+  },
+  {
+    id: 'textiles',
+    name: 'Textile & Apparel',
+    sub: 'Garments · Handlooms',
+    tag: 'challenged',
+    badge: 'badge-r', badgeText: 'Challenged',
+    cagr: '+2.1%',
+    impact: 'Challenged',
+    benefit: 'Job work provisions · Export competitiveness',
+    challenge: 'Inverted duty structure · Unorganized sector impact',
+    desc: 'Lowest CAGR among sectors. Inverted duty structure caused refund complications. Unorganized sector faced formalization pressures. Export competitiveness improved slightly.',
+    metrics: [{val:'+2.1%',lbl:'CAGR'},{val:'Inverted',lbl:'Duty Issue'},{val:'Export ↑',lbl:'Slight'}]
+  },
+  {
+    id: 'agriculture',
+    name: 'Agriculture',
+    sub: 'Food Processing · Farm Inputs',
+    tag: 'challenged',
+    badge: 'badge-r', badgeText: 'Challenged',
+    cagr: 'Variable',
+    impact: 'Challenged',
+    benefit: 'Tax exemptions on raw produce · Supply chain improvements',
+    challenge: 'MSMEs formalization burden · Variable compliance',
+    desc: 'Raw agricultural produce exempt but processed food taxed. Supply chain efficiency improvements noted. MSMEs and small farmers faced compliance burden despite exemptions.',
+    metrics: [{val:'0%',lbl:'Raw Produce'},{val:'5–12%',lbl:'Processed'},{val:'MSME ⚠',lbl:'Burden'}]
+  },
+];
+
+const tableData = [
+  ['Manufacturing','Automobiles, Pharma, FMCG','ITC utilization, compliance','+5.8%','mixed','ITC cascade reduction ~13%','Multi-state complexity'],
+  ['Services','IT, Banking, Hospitality','Tax rate changes, reverse charge','Variable','mixed','IT export zero-rating','Banking rate increase'],
+  ['Logistics','Warehousing, Transportation','Transit time, documentation','+8.2%','positive','20-30% delivery time reduction','Small operator compliance'],
+  ['Real Estate','Residential, Commercial','Input tax credits, affordability','+3.2%','mixed','Market transparency','Affordable housing costs'],
+  ['Agriculture','Food processing, Farm inputs','Tax exemptions, supply chain','Variable','challenged','Zero-rating on raw produce','MSME formalization burden'],
+  ['E-commerce','Marketplace, Logistics','TCS provisions, compliance','+22.4%','positive','TCS clarity, national market','Complex state provisions'],
+  ['Textiles','Garments, Handlooms','Job work, export competitiveness','+2.1%','challenged','Export competitiveness','Inverted duty structure'],
+  ['Pharmaceuticals','Generic, Specialty Drugs','ITC, export incentives','+11.3%','positive','Export zero-rating, ITC','Classification disputes'],
+];
+
+// ── RENDER REVENUE CHART ──
+function renderRevChart() {
+  const container = document.getElementById('revChart');
+  const maxVal = Math.max(...revenueData.map(d => d.val));
+  revenueData.forEach(d => {
+    const col = document.createElement('div');
+    col.className = 'rev-col';
+    const pct = (d.val / maxVal) * 100;
+    const clr = d.growth > 15 ? 'var(--accent3)' : d.growth > 5 ? 'var(--accent)' : 'var(--accent2)';
+    col.innerHTML = `
+      <div class="rev-bar" style="height:${pct}%;background:${clr || 'var(--accent2)'};min-height:20px;"
+        data-val="₹${(d.val/1000).toFixed(0)}K Cr"></div>
+      <div class="rev-year">${d.year.replace('20','')}</div>
+      <div class="rev-growth ${d.growth > 0 ? 'up' : ''}">${d.growth ? '+'+d.growth+'%' : '—'}</div>
+    `;
+    container.appendChild(col);
+  });
+}
+
+// ── RENDER CAGR CHART ──
+function renderCAGR() {
+  const container = document.getElementById('cagrChart');
+  const maxCAGR = Math.max(...cagrData.map(d => d.cagr));
+  cagrData.forEach(d => {
+    const pct = (d.cagr / maxCAGR) * 100;
+    container.innerHTML += `
+      <div class="bar-row">
+        <div class="bar-label">${d.sector}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${d.color};">${d.cagr}%</div>
+        </div>
+        <div class="bar-val" style="color:${d.color}">+${d.cagr}%</div>
+      </div>
+    `;
+  });
+}
+
+// ── RENDER SECTOR CARDS ──
+function renderSectors(filter = 'all') {
+  const grid = document.getElementById('sectorGrid');
+  grid.innerHTML = '';
+  sectors
+    .filter(s => filter === 'all' || s.tag === filter)
+    .forEach(s => {
+      grid.innerHTML += `
+        <div class="s-card">
+          <div class="s-card-header">
+            <div>
+              <div class="s-card-title">${s.name}</div>
+              <div class="s-card-sub">${s.sub}</div>
+            </div>
+            <span class="badge ${s.badge}">${s.badgeText}</span>
+          </div>
+          <div class="s-card-body">${s.desc}</div>
+          <div class="s-card-metrics">
+            ${s.metrics.map(m => `<div class="s-metric"><div class="val" style="color:var(--accent)">${m.val}</div><div class="lbl">${m.lbl}</div></div>`).join('')}
+          </div>
+        </div>
+      `;
+    });
+}
+
+// ── RENDER TABLE ──
+function renderTable() {
+  const tbody = document.getElementById('sectorTableBody');
+  tableData.forEach(row => {
+    const [sector, sub, metric, cagr, impact, benefit, challenge] = row;
+    const badgeCls = impact === 'positive' ? 'badge-g' : impact === 'mixed' ? 'badge-y' : 'badge-r';
+    const badgeTxt = impact === 'positive' ? 'Positive' : impact === 'mixed' ? 'Mixed' : 'Challenged';
+    const cagrNum = parseFloat(cagr) || 0;
+    const cagrW = cagrNum > 0 ? Math.min((cagrNum/25)*100, 100) : 20;
+    tbody.innerHTML += `
+      <tr>
+        <td style="font-weight:700;color:var(--text)">${sector}</td>
+        <td style="color:var(--muted)">${sub}</td>
+        <td style="color:var(--muted);font-size:.6rem">${metric}</td>
+        <td>
+          <div class="cagr-bar">
+            <span style="font-weight:700;color:var(--accent);min-width:45px">${cagr}</span>
+            ${cagrNum > 0 ? `<div class="cagr-mini" style="width:${cagrW}px"></div>` : ''}
+          </div>
+        </td>
+        <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+        <td style="color:var(--accent3);font-size:.65rem">${benefit}</td>
+        <td style="color:var(--danger);font-size:.65rem">${challenge}</td>
+      </tr>
+    `;
+  });
+}
+
+// ── TAB FILTER ──
+function filterSectors(filter) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderSectors(filter);
+}
+
+// ── INIT ──
+renderRevChart();
+renderCAGR();
+renderSectors();
+renderTable();
+</script>
+</body>
+</html>
